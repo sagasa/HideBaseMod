@@ -1,0 +1,238 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) 
+// Source File Name:   ModConfig.java
+
+package lumien.modcontrol.config;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
+
+public class ModConfig
+{
+
+    public ModConfig()
+    {
+        whiteList = new HashSet();
+        blackList = new HashMap();
+        greyList = new HashMap();
+    }
+
+    public void load(File configDictionary)
+        throws IOException
+    {
+        if(!configDictionary.exists())
+            configDictionary.mkdir();
+        loadConfig(configDictionary);
+        loadLists(configDictionary);
+    }
+
+    private void loadConfig(File configDictionary)
+        throws IOException
+    {
+        Configuration configuration = new Configuration(new File(configDictionary, "ModControl.cfg"));
+        opBypass = configuration.get("Settings", "Op-Bypass", true, "Whether Operators can ignore this mod").getBoolean();
+        m
+    }
+
+    private void loadLists(File configDictionary)
+        throws IOException
+    {
+        File whiteListFile = new File(configDictionary, "whiteList.txt");
+        File blackListFile = new File(configDictionary, "blackList.txt");
+        File greyListFile = new File(configDictionary, "greyList.txt");
+        if(!whiteListFile.exists())
+            whiteListFile.createNewFile();
+        if(!blackListFile.exists())
+            blackListFile.createNewFile();
+        if(!greyListFile.exists())
+            greyListFile.createNewFile();
+        BufferedReader reader = new BufferedReader(new FileReader(whiteListFile));
+        String line;
+        for(line = null; (line = reader.readLine()) != null;)
+            whiteList.add(line);
+
+        reader.close();
+        reader = new BufferedReader(new FileReader(blackListFile));
+        while((line = reader.readLine()) != null) 
+            if(line.contains(":"))hiteList = new HashSet();
+        blackList = new HashMap();
+        greyList = new HashMap();
+    }
+
+    public void load(File configDictionary)
+        throws IOException
+    {
+        if(!configDictionary.exists())
+            configDictionary.mkdir();
+        loadConfig(configDictionary);
+        loadLists(configDictionary);
+    }
+
+    private void loadConfig(File configDictionary)
+        throws IOException
+    {
+        Configuration configuration = new Configuration(new File(configDictionary, "ModControl.cfg"));
+        opBypass = configuration.get("Settings", "Op-Bypass", true, "Whether Operators can ignore this mod").getBoolean();
+        m
+    }
+
+    private void loadLists(File configDictionary)
+        throws IOException
+    {
+        File whiteListFile = new File(configDictionary, "whiteList.txt");
+        File blackListFile = new File(configDictionary, "blackList.txt");
+        File greyListFile = new File(configDictionary, "greyList.txt");
+        if(!whiteListFile.exists())
+            whiteListFile.createNewFile();
+        if(!blackListFile.exists())
+            blackListFile.createNewFile();
+        if(!greyListFile.exists())
+            greyListFile.createNewFile();
+        BufferedReader reader = new BufferedReader(new FileReader(whiteListFile));
+        String line;
+        for(line = null; (line = reader.readLine()) != null;)
+            whiteList.add(line);
+
+        reader.close();
+        reader = new BufferedReader(new FileReader(blackListFile));
+        while((line = reader.readLine()) != null) 
+            if(line.contains(":"))hiteList = new HashSet();
+        blackList = new HashMap();
+        greyList = new HashMap();
+    }
+
+    public void load(File configDictionary)
+        throws IOException
+    {
+        if(!configDictionary.exists())
+            configDictionary.mkdir();
+        loadConfig(configDictionary);
+        loadLists(configDictionary);
+    }
+
+    private void loadConfig(File configDictionary)
+        throws IOException
+    {
+        Configuration configuration = new Configuration(new File(configDictionary, "ModControl.cfg"));
+        opBypass = configuration.get("Settings", "Op-Bypass", true, "Whether Operators can ignore this mod").getBoolean();
+        m
+    }
+
+    private void loadLists(File configDictionary)
+        throws IOException
+    {
+        File whiteListFile = new File(configDictionary, "whiteList.txt");
+        File blackListFile = new File(configDictionary, "blackList.txt");
+        File greyListFile = new File(configDictionary, "greyList.txt");
+        if(!whiteListFile.exists())
+            whiteListFile.createNewFile();
+        if(!blackListFile.exists())
+            blackListFile.createNewFile();
+        if(!greyListFile.exists())
+            greyListFile.createNewFile();
+        BufferedReader reader = new BufferedReader(new FileReader(whiteListFile));
+        String line;
+        for(line = null; (line = reader.readLine()) != null;)
+            whiteList.add(line);
+
+        reader.close();
+        reader = new BufferedReader(new FileReader(blackListFile));
+        while((line = reader.readLine()) != null) 
+            if(line.contains(":"))hiteList = new HashSet();
+        blackList = new HashMap();
+        greyList = new HashMap();
+    }
+
+    public void load(File configDictionary)
+        throws IOException
+    {
+        if(!configDictionary.exists())
+            configDictionary.mkdir();
+        loadConfig(configDictionary);
+        loadLists(configDictionary);
+    }
+
+    private void loadConfig(File configDictionary)
+        throws IOException
+    {
+        Configuration configuration = new Configuration(new File(configDictionary, "ModControl.cfg"));
+        opBypass = configuration.get("Settings", "Op-Bypass", true, "Whether Operators can ignore this mod").getBoolean();
+        m
+    }
+
+    private void loadLists(File configDictionary)
+        throws IOException
+    {
+        File whiteListFile = new File(configDictionary, "whiteList.txt");
+        File blackListFile = new File(configDictionary, "blackList.txt");
+        File greyListFile = new File(configDictionary, "greyList.txt");
+        if(!whiteListFile.exists())
+            whiteListFile.createNewFile();
+        if(!blackListFile.exists())
+            blackListFile.createNewFile();
+        if(!greyListFile.exists())
+            greyListFile.createNewFile();
+        BufferedReader reader = new BufferedReader(new FileReader(whiteListFile));
+        String line;
+        for(line = null; (line = reader.readLine()) != null;)
+            whiteList.add(line);
+
+        reader.close();
+        reader = new BufferedReader(new FileReader(blackListFile));
+        while((line = reader.readLine()) != null) 
+            if(line.contains(":"))
+            {
+                String split[] = line.split(":");
+                blackList.put(split[0], split[1]);
+            } else
+            {
+                blackList.put(line, defaultBlackListKickMessage);
+            }
+        reader.close();
+        reader = new BufferedReader(new FileReader(greyListFile));
+        while((line = reader.readLine()) != null) 
+            if(line.contains(":"))
+            {
+                String split[] = line.split(":");
+                greyList.put(split[0], split[1]);
+            } else
+            {
+                greyList.put(line, defaultGreyListKickMessage);
+            }
+
+    {
+        return blackList;
+    }
+
+    public HashMap getGreyList()
+    {
+        return greyList;
+    }
+
+    public boolean opBypass()dddddddddddddddddddddddddddddddddd
+    {
+        return opBypass;
+    }
+
+    public int getMode()
+    {
+        return mode;
+    }
+
+    public String getDefaultBlackListKickMessage()
+    {
+        return defaultBlackListKickMessage;
+    }
+
+    HashSet whiteList;
+    HashMap blackList;
+    HashMap greyList;
+    boolean opBypass;
+    int mode;
+    String defaultBlackListKickMessage;
+    String defaultGreyListKickMessage;
+}

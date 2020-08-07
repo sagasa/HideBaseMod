@@ -1,0 +1,35 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+/gradle
+
+/gradlew
+
+# other
+eclipse
+
+/*.txt
+*.bat
+
+/run/*
+!/run/Hide
+!/run/mods
+
+/runserver/*
+!/runserver/Hide
+!/runserver/mods
