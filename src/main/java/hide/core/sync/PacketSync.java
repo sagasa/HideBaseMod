@@ -25,10 +25,10 @@ public class PacketSync implements IMessage, IMessageHandler<PacketSync, IMessag
 
 	private int index;
 
-	private List<Integer> hashList;
+	private List<String> hashList;
 
-	private List<Integer> removeList;
-	private List<Pair<String, byte[]>> addList;
+	private List<String> removeList;
+	private List<Pair<String, String>> addList;
 
 	public static PacketSync makeStartPacket(int index) {
 		PacketSync packet = new PacketSync();
@@ -37,7 +37,7 @@ public class PacketSync implements IMessage, IMessageHandler<PacketSync, IMessag
 		return packet;
 	}
 
-	public static PacketSync makeHashPacket(int index, List<Integer> list) {
+	public static PacketSync makeHashPacket(int index, List<String> list) {
 		PacketSync packet = new PacketSync();
 		packet.mode = SEND_HASH;
 		packet.hashList = list;
@@ -45,7 +45,7 @@ public class PacketSync implements IMessage, IMessageHandler<PacketSync, IMessag
 		return packet;
 	}
 
-	public static PacketSync makeEditPacket(int index, List<Pair<String, byte[]>> addList, List<Integer> remove) {
+	public static PacketSync makeEditPacket(int index, List<Pair<String, String>> addList, List<String> remove) {
 		PacketSync packet = new PacketSync();
 		packet.mode = SEND_DATA;
 		packet.removeList = remove;
@@ -73,18 +73,18 @@ public class PacketSync implements IMessage, IMessageHandler<PacketSync, IMessag
 		buf.writeByte(index);
 		if (mode == SEND_DATA) {
 			buf.writeInt(addList.size());
-			for (Pair<String, byte[]> pair : addList) {
+			for (Pair<String, String> pair : addList) {
 				HideUtil.writeString(buf, pair.getLeft());
-				HideUtil.writeBytes(buf, pair.getRight());
+				HideUtil.writeString(buf, pair.getRight());
 			}
 			buf.writeInt(removeList.size());
-			for (Integer hash : removeList) {
-				buf.writeInt(hash);
+			for (String hash : removeList) {
+				HideUtil.writeString(buf, hash);
 			}
 		} else if (mode == SEND_HASH) {
 			buf.writeInt(hashList.size());
-			for (Integer hash : hashList) {
-				buf.writeInt(hash);
+			for (String hash : hashList) {
+				HideUtil.writeString(buf, hash);
 			}
 		}
 	}
@@ -97,20 +97,18 @@ public class PacketSync implements IMessage, IMessageHandler<PacketSync, IMessag
 			int length = buf.readInt();
 			addList = new ArrayList<>();
 			for (int i = 0; i < length; i++) {
-				addList.add(new ImmutablePair<String, byte[]>(HideUtil.readString(buf), HideUtil.readBytes(buf)));
+				addList.add(new ImmutablePair<String, String>(HideUtil.readString(buf), HideUtil.readString(buf)));
 			}
 			length = buf.readInt();
 			removeList = new ArrayList<>();
 			for (int i = 0; i < length; i++) {
-				removeList.add(buf.readInt());
+				removeList.add(HideUtil.readString(buf));
 			}
-		} else if (mode == REQ) {
-
 		} else if (mode == SEND_HASH) {
 			int size = buf.readInt();
 			hashList = new ArrayList<>();
 			for (int i = 0; i < size; i++) {
-				hashList.add(buf.readInt());
+				hashList.add(HideUtil.readString(buf));
 			}
 		}
 	}

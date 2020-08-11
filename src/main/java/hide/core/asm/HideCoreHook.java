@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import hide.core.HideBase;
 import hide.core.sync.FileData;
+import hide.core.sync.HideDownloader;
 import hide.core.sync.HideSync;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
@@ -24,25 +25,27 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class HideCoreHook {
 	/** 起動時のModファイル削除 */
 	public static void hookPreLoadMod() {
-		File dir = new File(Loader.instance().getConfigDir().getParentFile(), HideSync.Mods.ClientDir);
-		File deleteDir = new File(Loader.instance().getConfigDir().getParentFile(), HideSync.DeleteDir);
-		File[] test = dir.listFiles();
-		if (test != null)
-			for (File file : dir.listFiles()) {
-				if (file.getName().endsWith(HideSync.DeleteTag)) {
-					file.delete();
-					File mod = new File(dir, file.getName().replace(HideSync.DeleteTag, ""));
-					File move = new File(deleteDir, mod.getName());
-					if (!mod.renameTo(move))
-						System.err.println("delete error mod " + mod.getName() + " is coremod");
 
-				} else if (file.getName().endsWith(HideSync.AddTag)) {
-					File mod = new File(dir, file.getName().replace(HideSync.AddTag, ""));
-					if (!file.renameTo(mod))
-						System.err.println("rename error mod " + mod.getName() + " is coremod");
-					file.delete();
+		File deleteDir = new File(Loader.instance().getConfigDir().getParentFile(), HideSync.DeleteDir);
+		for (String str : HideSync.Mods.ClientDir) {
+			File dir = new File(Loader.instance().getConfigDir().getParentFile(), str);
+			if (dir.listFiles() != null)
+				for (File file : dir.listFiles()) {
+					if (file.getName().endsWith(HideSync.DeleteTag)) {
+						file.delete();
+						File mod = new File(dir, file.getName().replace(HideSync.DeleteTag, ""));
+						File move = new File(deleteDir, mod.getName());
+						if (!mod.renameTo(move))
+							System.err.println("delete error mod " + mod.getName() + " is coremod");
+
+					} else if (file.getName().endsWith(HideSync.AddTag)) {
+						File mod = new File(dir, file.getName().replace(HideSync.AddTag, ""));
+						if (!file.renameTo(mod))
+							System.err.println("rename error mod " + mod.getName() + " is coremod");
+						file.delete();
+					}
 				}
-			}
+		}
 	}
 
 	/** trueでキャンセル*/
@@ -50,7 +53,8 @@ public class HideCoreHook {
 			Consumer cons, Object error) {
 		if (msg instanceof FileData) {
 			FileData data = (FileData) msg;
-
+			Object obj = ctx.channel();
+			System.out.println(ctx.channel().getClass());
 			String change = HideSync.applyFileChange(data.dataMap);
 			if (change != null) {
 				cons.accept(error);
@@ -62,6 +66,13 @@ public class HideCoreHook {
 		}
 		//System.out.println("HOOK Clinet DATA!!!!!!!!!!!!!!!");
 		return false;
+	}
+
+	/** trueでキャンセル*/
+	@SideOnly(Side.CLIENT)
+	public static void onConnectServer(String ip, int port) {
+		HideDownloader.LastIP = ip;
+		HideDownloader.LastPort = port;
 	}
 
 	public static Function<Minecraft, GuiNewChat> GuiNewChat;

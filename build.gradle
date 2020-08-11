@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "0.14"
+version = "0.16"
 group= "com.sagasa.hfmod" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "HFBase"
 
@@ -69,7 +69,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
     shade 'org.xerial:sqlite-jdbc:3.32.3'
-    
+
     shade "net.dv8tion:JDA:4.2.0_168"
     shade 'com.jagrosh:jda-utilities-command:2.0'
 }

@@ -10,9 +10,7 @@ import hide.core.sync.HideSync;
 import hide.core.sync.HideSync.SyncDirEntry;
 import hide.core.sync.HttpFileServer;
 import hide.core.sync.PacketSync;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDisconnected;
-import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -76,23 +74,16 @@ public class HideBase {
 		for (ModContainer mod : Loader.instance().getModList()) {
 			log.info(mod);
 		}
-		if (event.getSide() == Side.CLIENT) {
-			Thread thread = new Thread(new HttpFileServer());
-			thread.setDaemon(true);
-			thread.start();
-
-			File test = new File(BaseDir, "test");
-			test.delete();
-			System.out.println("Download test start");
-			HideDownloader.downloadFile(test, "http://127.0.0.1:8080/test.jar",
-					ResourcePackRepository.getDownloadHeaders(), 52428800, null, Minecraft.getMinecraft().getProxy());
-		}
-
 	}
 
+	/**ファイルサーバー立ち上げ*/
+	@SideOnly(Side.SERVER)
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandSuicide());
+		Thread thread = new Thread(new HttpFileServer(event.getServer().getServerPort() + 1));
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	//切断時にデータを削除

@@ -20,18 +20,18 @@ public class FileData extends FMLHandshakeMessage {
 
 	private byte mode = -1;
 
-	public Map<Byte, List<Integer>> hashList;
+	public Map<Byte, List<String>> hashList;
 
-	public Map<Byte, Pair<List<Pair<String, byte[]>>, List<Integer>>> dataMap;
+	public Map<Byte, Pair<List<Pair<String, String>>, List<String>>> dataMap;
 
-	public static FileData makeHashPacket(Map<Byte, List<Integer>> list) {
+	public static FileData makeHashPacket(Map<Byte, List<String>> list) {
 		FileData packet = new FileData();
 		packet.mode = SEND_HASH;
 		packet.hashList = list;
 		return packet;
 	}
 
-	public static FileData makeEditPacket(Map<Byte, Pair<List<Pair<String, byte[]>>, List<Integer>>> data) {
+	public static FileData makeEditPacket(Map<Byte, Pair<List<Pair<String, String>>, List<String>>> data) {
 		FileData packet = new FileData();
 		packet.mode = SEND_DATA;
 		packet.dataMap = data;
@@ -59,28 +59,28 @@ public class FileData extends FMLHandshakeMessage {
 
 		if (mode == SEND_DATA) {
 			buf.writeByte(dataMap.size());
-			for (Entry<Byte, Pair<List<Pair<String, byte[]>>, List<Integer>>> entry : dataMap.entrySet()) {
+			for (Entry<Byte, Pair<List<Pair<String, String>>, List<String>>> entry : dataMap.entrySet()) {
 				buf.writeByte(entry.getKey());
 
 				buf.writeShort(entry.getValue().getLeft().size());
-				for (Pair<String, byte[]> pair : entry.getValue().getLeft()) {
+				for (Pair<String, String> pair : entry.getValue().getLeft()) {
 					HideUtil.writeString(buf, pair.getLeft());
-					HideUtil.writeBytes(buf, pair.getRight());
+					HideUtil.writeString(buf, pair.getRight());
 				}
 
 				buf.writeShort(entry.getValue().getRight().size());
-				for (Integer hash : entry.getValue().getRight()) {
-					buf.writeInt(hash);
+				for (String hash : entry.getValue().getRight()) {
+					HideUtil.writeString(buf, hash);
 				}
 			}
 		} else if (mode == SEND_HASH) {
 			buf.writeByte(hashList.size());
-			for (Entry<Byte, List<Integer>> entry : hashList.entrySet()) {
+			for (Entry<Byte, List<String>> entry : hashList.entrySet()) {
 				buf.writeByte(entry.getKey());
 
 				buf.writeShort(entry.getValue().size());
-				for (Integer hash : entry.getValue()) {
-					buf.writeInt(hash);
+				for (String hash : entry.getValue()) {
+					HideUtil.writeString(buf, hash);
 				}
 			}
 		}
@@ -96,14 +96,14 @@ public class FileData extends FMLHandshakeMessage {
 				byte index = buf.readByte();
 
 				int listSize = buf.readShort();
-				List<Pair<String, byte[]>> addlist = new ArrayList<>();
+				List<Pair<String, String>> addlist = new ArrayList<>();
 				for (int j = 0; j < listSize; j++) {
-					addlist.add(new ImmutablePair<String, byte[]>(HideUtil.readString(buf), HideUtil.readBytes(buf)));
+					addlist.add(new ImmutablePair<String, String>(HideUtil.readString(buf), HideUtil.readString(buf)));
 				}
 				listSize = buf.readShort();
-				List<Integer> removelist = new ArrayList<>();
+				List<String> removelist = new ArrayList<>();
 				for (int j = 0; j < listSize; j++) {
-					removelist.add(buf.readInt());
+					removelist.add(HideUtil.readString(buf));
 				}
 				dataMap.put(index, ImmutablePair.of(addlist, removelist));
 			}
@@ -115,9 +115,9 @@ public class FileData extends FMLHandshakeMessage {
 				byte index = buf.readByte();
 
 				int listSize = buf.readShort();
-				List<Integer> list = new ArrayList<>();
+				List<String> list = new ArrayList<>();
 				for (int j = 0; j < listSize; j++) {
-					list.add(buf.readInt());
+					list.add(HideUtil.readString(buf));
 				}
 				hashList.put(index, list);
 			}

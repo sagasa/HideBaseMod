@@ -61,8 +61,10 @@ public class HideFileRes extends AbstractHttpMessage {
 		bw.write(version + SP + code + SP + phrase + CRLF);
 		writeHeader(bw);
 
+		if (file == null)
+			return;
 		try (DataInputStream inStream = new DataInputStream(new FileInputStream(file));) {
-			int count = 0;
+			float count = 0;
 			int i;
 			byte[] abyte = new byte[4096];
 			while ((i = inStream.read(abyte)) >= 0) {
@@ -72,7 +74,7 @@ public class HideFileRes extends AbstractHttpMessage {
 					progress.setLoadingProgress((int) (count / total * 100.0F));
 				}
 
-				if (maxSize > 0 && count > (float) maxSize) {
+				if (maxSize > 0 && count > maxSize) {
 					if (progress != null) {
 						progress.setDoneWorking();
 					}
@@ -96,7 +98,6 @@ public class HideFileRes extends AbstractHttpMessage {
 	public void readBytes(InputStream inStream) throws IOException {
 		//BufferedReader br = new BufferedReader(new InputStreamReader(inStream, StandardCharsets.UTF_8));
 
-
 		//Matcher matcher = responseLinePattern.matcher(br.readLine());
 		//if (!matcher.matches()) {
 		//	throw new ParseException(line);
@@ -106,9 +107,11 @@ public class HideFileRes extends AbstractHttpMessage {
 		//phrase = matcher.group("phrase");
 
 		//readHeader(br);
+		if (file == null)
+			return;
 
 		try (DataOutputStream outputstream = new DataOutputStream(new FileOutputStream(file));) {
-			int count = 0;
+			float count = 0;
 			int i;
 			byte[] abyte = new byte[4096];
 			while ((i = inStream.read(abyte)) >= 0) {
@@ -118,7 +121,7 @@ public class HideFileRes extends AbstractHttpMessage {
 					progress.setLoadingProgress((int) (count / total * 100.0F));
 				}
 
-				if (maxSize > 0 && count > (float) maxSize) {
+				if (maxSize > 0 && count > maxSize) {
 					if (progress != null) {
 						progress.setDoneWorking();
 					}

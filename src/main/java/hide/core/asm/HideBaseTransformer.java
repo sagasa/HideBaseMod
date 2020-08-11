@@ -150,6 +150,23 @@ public class HideBaseTransformer implements IClassTransformer {
 						mv.visitLabel(skip);
 					}
 				}));
+		/* ログイン時にIPとアドレスをもらう */
+		transformEntries.add(new TransformEntry("net.minecraft.client.multiplayer.GuiConnecting",
+				new String[] { "connect", "func_146367_a" },
+				(mv) -> new MethodVisitor(ASM4, mv) {
+					@Override
+					public void visitCode() {
+						super.visitCode();
+						mv.visitVarInsn(ALOAD, 1);
+						mv.visitVarInsn(ILOAD, 2);
+						mv.visitMethodInsn(
+								INVOKESTATIC, "hide/core/asm/HideCoreHook", "onConnectServer", Type
+										.getMethodDescriptor(Type.VOID_TYPE,
+												Type.getObjectType("java/lang/String"),
+												Type.INT_TYPE),
+								false);
+					}
+				}, true));
 		/* 腕の向きを上書き */
 		transformEntries.add(new TransformEntry("net.minecraft.client.model.ModelBiped",
 				new String[] { "setRotationAngles", "func_78087_a" },
