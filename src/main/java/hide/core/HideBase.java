@@ -5,13 +5,10 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import hide.core.gui.GuiRestart;
+import hide.core.ops.CommandOPLevel;
 import hide.core.sync.HideSync;
 import hide.core.sync.HideSync.SyncDirEntry;
 import hide.core.sync.HttpFileServer;
-import hide.core.sync.PacketSync;
-import net.minecraft.client.gui.GuiDisconnected;
-import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -49,6 +46,8 @@ public class HideBase {
 	public static final SyncDirEntry HideDirEntry = new SyncDirEntry("/Hide/", "/Hide/").setOnlyManagedFile(false)
 			.setNeedRestart(true);
 
+	public static Process test;
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		log = event.getModLog();
@@ -58,8 +57,6 @@ public class HideBase {
 		 * IMesssageHandlerクラスとMessageクラスの登録。 第三引数：MessageクラスのMOD内での登録ID。256個登録できる
 		 * 第四引数：送り先指定。クライアントかサーバーか、Side.CLIENT Side.SERVER
 		 */
-		NETWORK.registerMessage(PacketSync.class, PacketSync.class, 0, Side.SERVER);
-		NETWORK.registerMessage(PacketSync.class, PacketSync.class, 1, Side.CLIENT);
 
 		HideSync.registerSyncDir(HideDirEntry);
 	}
@@ -67,6 +64,7 @@ public class HideBase {
 	@EventHandler
 	public void construct(FMLConstructionEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+		MinecraftForge.EVENT_BUS.register(new HideSync());
 	}
 
 	@EventHandler
@@ -76,14 +74,15 @@ public class HideBase {
 		}
 	}
 
-	/**ファイルサーバー立ち上げ*/
-	@SideOnly(Side.SERVER)
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandSuicide());
-		Thread thread = new Thread(new HttpFileServer(event.getServer().getServerPort() + 1));
-		thread.setDaemon(true);
-		thread.start();
+		if (event.getServer().isDedicatedServer()) {
+			event.registerServerCommand(new CommandOPLevel());
+			Thread thread = new Thread(new HttpFileServer(event.getServer().getServerPort() + 1));
+			thread.setDaemon(true);
+			thread.start();
+		}
 	}
 
 	//切断時にデータを削除
@@ -96,16 +95,5 @@ public class HideBase {
 	@SubscribeEvent
 	public void onEvent(ClientConnectedToServerEvent event) {
 		HidePlayerDataManager.clearClientData();
-	}
-
-	@SideOnly(Side.CLIENT)
-	@SubscribeEvent
-	public void onEvent(GuiOpenEvent event) {
-		if (event.getGui() instanceof GuiDisconnected) {
-			GuiDisconnected gui = (GuiDisconnected) event.getGui();
-			if (gui.message.getUnformattedText().startsWith("hidebase.restart:"))
-				event.setGui(
-						new GuiRestart(gui.message.getUnformattedComponentText().replace("hidebase.restart:", "")));
-		}
 	}
 }

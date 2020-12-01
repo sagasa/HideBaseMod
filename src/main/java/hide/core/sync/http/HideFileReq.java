@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.ParseException;
-
 /**Getしかサポートしないリクエスト*/
 public class HideFileReq extends AbstractHttpMessage {
 
@@ -45,7 +43,7 @@ public class HideFileReq extends AbstractHttpMessage {
 		String line = br.readLine();
 		Matcher matcher = requestLinePattern.matcher(line);
 		if (!matcher.matches()) {
-			throw new ParseException(line);
+			throw new IOException(line);
 		}
 		method = Method.valueOf(matcher.group("method"));
 		target = matcher.group("target");

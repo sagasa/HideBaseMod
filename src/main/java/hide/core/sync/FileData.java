@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import hide.core.HideUtil;
+import hide.core.util.BufUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage;
 
@@ -64,13 +64,13 @@ public class FileData extends FMLHandshakeMessage {
 
 				buf.writeShort(entry.getValue().getLeft().size());
 				for (Pair<String, String> pair : entry.getValue().getLeft()) {
-					HideUtil.writeString(buf, pair.getLeft());
-					HideUtil.writeString(buf, pair.getRight());
+					BufUtil.writeString(buf, pair.getLeft());
+					BufUtil.writeString(buf, pair.getRight());
 				}
 
 				buf.writeShort(entry.getValue().getRight().size());
 				for (String hash : entry.getValue().getRight()) {
-					HideUtil.writeString(buf, hash);
+					BufUtil.writeString(buf, hash);
 				}
 			}
 		} else if (mode == SEND_HASH) {
@@ -80,7 +80,7 @@ public class FileData extends FMLHandshakeMessage {
 
 				buf.writeShort(entry.getValue().size());
 				for (String hash : entry.getValue()) {
-					HideUtil.writeString(buf, hash);
+					BufUtil.writeString(buf, hash);
 				}
 			}
 		}
@@ -98,12 +98,12 @@ public class FileData extends FMLHandshakeMessage {
 				int listSize = buf.readShort();
 				List<Pair<String, String>> addlist = new ArrayList<>();
 				for (int j = 0; j < listSize; j++) {
-					addlist.add(new ImmutablePair<String, String>(HideUtil.readString(buf), HideUtil.readString(buf)));
+					addlist.add(new ImmutablePair<String, String>(BufUtil.readString(buf), BufUtil.readString(buf)));
 				}
 				listSize = buf.readShort();
 				List<String> removelist = new ArrayList<>();
 				for (int j = 0; j < listSize; j++) {
-					removelist.add(HideUtil.readString(buf));
+					removelist.add(BufUtil.readString(buf));
 				}
 				dataMap.put(index, ImmutablePair.of(addlist, removelist));
 			}
@@ -117,7 +117,7 @@ public class FileData extends FMLHandshakeMessage {
 				int listSize = buf.readShort();
 				List<String> list = new ArrayList<>();
 				for (int j = 0; j < listSize; j++) {
-					list.add(HideUtil.readString(buf));
+					list.add(BufUtil.readString(buf));
 				}
 				hashList.put(index, list);
 			}

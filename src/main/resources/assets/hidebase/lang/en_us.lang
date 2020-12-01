@@ -1,3 +1,12 @@
 hidebase.restart=need restart
+hidebase.restart.success=File updated please restart
+hidebase.restart.failed=download failed
+hidebase.restart.work=File downloading...
+hidebase.restart=need restart
+hidebase.nojava=install java to auto update all mod
 
 commands.suicide.usage=/suicide
+
+commands.oplevel.usage=/opLevel [userName] [level]
+commands.oplevel.failed=/opLevel [userName] [level]
+commands.oplevel.success=%s`s opLevel change to %s

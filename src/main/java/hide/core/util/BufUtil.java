@@ -1,10 +1,10 @@
-package hide.core;
+package hide.core.util;
 
 import java.nio.charset.Charset;
 
 import io.netty.buffer.ByteBuf;
 
-public class HideUtil {
+public class BufUtil {
 	public static final Charset UTF8 = Charset.forName("UTF-8");
 
 	/** バッファに文字列を書き込む */

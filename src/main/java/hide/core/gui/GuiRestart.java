@@ -1,6 +1,7 @@
 package hide.core.gui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,6 +20,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.GuiErrorBase;
+import net.minecraftforge.fml.common.Loader;
 
 /**ファイルの変更のため再起動が必要*/
 public class GuiRestart extends GuiErrorBase {
@@ -27,10 +29,8 @@ public class GuiRestart extends GuiErrorBase {
 	private List<GuiDownloadEntry> download = new ArrayList<>();
 	private List<ListenableFuture<Object>> taskList = new ArrayList<>();
 	private AtomicInteger runCount = new AtomicInteger();
-	private boolean isEnd = false;
 
 	public GuiRestart(String msg) {
-		this.msg = msg;
 		String[] split = msg.split(":");
 		for (int i = 0; i < split.length; i++)
 			if (i % 2 == 1)
@@ -40,12 +40,39 @@ public class GuiRestart extends GuiErrorBase {
 
 	}
 
-	private void onEndTask() {
+	private boolean noError = true;
+
+	private void onEndTask(boolean ok) {
+		noError = noError && ok;
 		if (runCount.decrementAndGet() <= 0) {
 			exitButton.id = 21;
-			isEnd = true;
 			exitButton.displayString = I18n.format("menu.quit");
+
+			if (noError) {
+				msgColor = 0x0FFF0F;
+				msg = I18n.format("hidebase.restart.success");
+			} else {
+				msgColor = 0xFF0F0F;
+				msg = I18n.format("hidebase.restart.failed");
+			}
+
 			System.out.println("All End");
+			//Hide/Update.jarを起動する
+			try {
+				Runtime rt = Runtime.getRuntime();
+				List<String> list = new ArrayList();
+				File modDir = Loader.instance().getConfigDir().getParentFile();
+				list.add(new File(modDir, HideSync.DeleteDir).toString());
+				for (String str : HideSync.Mods.ClientDir)
+					list.add(new File(modDir, str).toString());
+				//プロセスが起きているなら
+				if (!rt.exec("java -jar " + modDir.toPath() + "/Hide/Updater.jar " + Strings.join(list, ' '))
+						.isAlive()) {
+					noJavaMsg = I18n.format("hidebase.nojava");
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 
@@ -77,20 +104,19 @@ public class GuiRestart extends GuiErrorBase {
 						new FutureCallback<Object>() {
 							@Override
 							public void onSuccess(Object result) {
-								System.out.println("success");
-								onEndTask();
+								onEndTask(true);
 							}
 
 							@Override
 							public void onFailure(Throwable t) {
 								HideBase.log.warn("Download canceled");
-								onEndTask();
+								onEndTask(false);
 							}
 						});
 				download.add(gui);
 			}
 		} else {
-			onEndTask();
+			onEndTask(true);
 		}
 	}
 
@@ -108,17 +134,19 @@ public class GuiRestart extends GuiErrorBase {
 		}
 	}
 
-	private String msg;
+	private String noJavaMsg = null;
+	private String msg = I18n.format("hidebase.restart.work");
+	private int msgColor = 0xFFFF0F;
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
 		//1番上
-		if (isEnd)
-			this.drawCenteredString(this.fontRenderer, "File updated please restart", this.width / 2, 20, 0x0FFF0F);
-		else
-			this.drawCenteredString(this.fontRenderer, "File downloading...", this.width / 2, 20, 0xFFFF0F);
+		this.drawCenteredString(this.fontRenderer, msg, this.width / 2, 20, msgColor);
 
+		if (noJavaMsg != null) {
+			this.drawCenteredString(this.fontRenderer, noJavaMsg, this.width / 2, 40, 0xFFFF0F);
+		}
 		super.drawScreen(mouseX, mouseY, partialTicks);
 
 		int yPos = 36;

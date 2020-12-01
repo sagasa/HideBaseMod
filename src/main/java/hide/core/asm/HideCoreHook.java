@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import hide.core.HideBase;
+import hide.core.ops.HideUserListOps;
 import hide.core.sync.FileData;
 import hide.core.sync.HideDownloader;
 import hide.core.sync.HideSync;
@@ -16,6 +17,7 @@ import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.server.management.UserListOps;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
@@ -27,6 +29,7 @@ public class HideCoreHook {
 	public static void hookPreLoadMod() {
 
 		File deleteDir = new File(Loader.instance().getConfigDir().getParentFile(), HideSync.DeleteDir);
+		System.out.println(HideSync.Mods.ClientDir);
 		for (String str : HideSync.Mods.ClientDir) {
 			File dir = new File(Loader.instance().getConfigDir().getParentFile(), str);
 			if (dir.listFiles() != null)
@@ -46,6 +49,12 @@ public class HideCoreHook {
 					}
 				}
 		}
+	}
+
+	/**改造したOpListを返す*/
+	public static UserListOps getHideListOps(File file) {
+		System.out.println("asm getHideListOps ");
+		return new HideUserListOps(file);
 	}
 
 	/** trueでキャンセル*/
@@ -103,10 +112,8 @@ public class HideCoreHook {
 	public static boolean hookOnServerHello(ChannelHandlerContext ctx, FMLHandshakeMessage msg) {
 		if (msg instanceof FileData) {
 			HideSync.sendChangeToClient(ctx, (FileData) msg);
-			System.out.println("実験は成功だ");
 			return true;
 		}
-		System.out.println("HOOK Server HELLO!!!!!!!!!!!!!!!" + msg.getClass());
 		return false;
 	}
 

@@ -41,6 +41,47 @@ public class HideBaseTransformer implements IClassTransformer {
 								super.visitInsn(opcode);
 							}
 						}));
+		/* OPリストを乗っ取り */
+		transformEntries
+				.add(new TransformEntry("net.minecraft.server.management.PlayerList", new String[] { "<init>" },
+						(mv) -> new MethodVisitor(ASM4, mv) {
+							boolean flag = false;
+
+							@Override
+							public void visitTypeInsn(int opcode, String type) {
+								if (type.equals("net/minecraft/server/management/UserListOps")) {
+									flag = true;
+									return;
+								}
+								super.visitTypeInsn(opcode, type);
+							}
+
+							@Override
+							public void visitInsn(int opcode) {
+								if (opcode == DUP && flag) {
+									flag = false;
+									return;
+								}
+								super.visitInsn(opcode);
+							}
+
+							//代わりを挿入
+							@Override
+							public void visitMethodInsn(int opcode, String owner, String name, String desc,
+									boolean itf) {
+								if (owner.equals("net/minecraft/server/management/UserListOps")) {
+									System.out.println("TEST " + opcode + " " + owner + " " + name + " " + desc);
+									opcode = INVOKESTATIC;
+									owner = "hide/core/asm/HideCoreHook";
+									name = "getHideListOps";
+									desc = Type.getMethodDescriptor(Type.getObjectType(
+											"net/minecraft/server/management/UserListOps"),
+											Type.getObjectType(
+													"java/io/File"));
+								}
+								super.visitMethodInsn(opcode, owner, name, desc, itf);
+							}
+						}));
 		/* GuiInGametの初期化 */
 		transformEntries.add(new TransformEntry("net.minecraft.client.gui.GuiIngame", new String[] { "<init>" },
 				(mv) -> new MethodVisitor(ASM4, mv) {

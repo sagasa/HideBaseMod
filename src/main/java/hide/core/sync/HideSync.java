@@ -13,11 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -30,12 +25,26 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
 import hide.core.HideBase;
+import hide.core.gui.GuiRestart;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.client.gui.GuiDisconnected;
+import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class HideSync {
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onEvent(GuiOpenEvent event) {
+		if (event.getGui() instanceof GuiDisconnected) {
+			GuiDisconnected gui = (GuiDisconnected) event.getGui();
+			if (gui.message.getUnformattedText().startsWith("hidebase.restart:"))
+				event.setGui(
+						new GuiRestart(gui.message.getUnformattedComponentText().replace("hidebase.restart:", "")));
+		}
+	}
 
 	/** 利用には登録が必要 */
 	public static class SyncDirEntry {
@@ -142,7 +151,6 @@ public class HideSync {
 				pair = new ImmutablePair<String, Long>(DigestUtils.sha1Hex(ins), file.lastModified());
 				fileHash.put(file, pair);
 			} catch (IOException e) {
-				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
 				return "";
 			}
@@ -243,36 +251,9 @@ public class HideSync {
 		ctx.writeAndFlush(FileData.makeEditPacket(dataMap));
 	}
 
-	//==== ログイン後のアップデート ====
+	//==== ログイン後のアップデート ==== TODO
 
-	private static final ThreadPoolExecutor FileIOExecutor = new ThreadPoolExecutor(0, 10, 5000, TimeUnit.MILLISECONDS,
-			new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
-				private AtomicInteger count = new AtomicInteger(1);
 
-				@Override
-				public Thread newThread(Runnable r) {
-					Thread thread = new Thread(r, "HideFile I/O Executor Thread-" + count.getAndIncrement());
-					thread.setDaemon(true);
-					return thread;
-				}
-			});
-
-	/** クライアントサイド 指定ディレクトリ直下のファイルのハッシュを取って送信 */
-	static void sentFileState(int index) {
-		FileIOExecutor.execute(() -> {
-			HideBase.NETWORK.sendToServer(PacketSync.makeHashPacket(index, makeFileState(index)));
-		});
-	}
-
-	/** サーバーサイド 受け取ったハッシュとファイルを照合して変更パケットを送信 */
-	static void sentFileChange(int index, List<String> hashList, EntityPlayerMP player) {
-		FileIOExecutor.execute(() -> {
-			List<Pair<String, String>> addList = new ArrayList();
-			makeFileChange(index, hashList, addList);
-			HideBase.log.info("add " + addList + " remove" + hashList);
-			HideBase.NETWORK.sendTo(PacketSync.makeEditPacket(index, addList, hashList), player);
-		});
-	}
 
 	@SideOnly(Side.CLIENT)
 	/**一括適応*/

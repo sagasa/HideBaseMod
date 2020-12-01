@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.ParseException;
-
 import net.minecraft.util.StringUtils;
 
 public abstract class AbstractHttpMessage {
@@ -31,7 +29,7 @@ public abstract class AbstractHttpMessage {
 
 	public abstract void readBytes(InputStream inStream) throws IOException;
 
-	protected void readHeader(BufferedReader br) throws IOException, ParseException {
+	protected void readHeader(BufferedReader br) throws IOException {
 		while (true) {
 			String headerField = br.readLine();
 			if (StringUtils.isNullOrEmpty(headerField.trim()))
@@ -41,7 +39,7 @@ public abstract class AbstractHttpMessage {
 			if (matcher.matches()) {
 				headers.put(matcher.group("name").toLowerCase(), matcher.group("value"));
 			} else {
-				throw new ParseException(headerField);
+				throw new IOException(headerField);
 			}
 		}
 	}
