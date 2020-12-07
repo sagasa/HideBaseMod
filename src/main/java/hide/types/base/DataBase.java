@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.EnumUtils;
+import org.apache.logging.log4j.util.Strings;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -237,6 +239,10 @@ public abstract class DataBase {
 		}
 	}
 
+	public <T> T get(DataEntry<T> key) {
+		return get(key, null);
+	}
+
 	/**
 	 * 元値とキーから結果を返す
 	 */
@@ -305,8 +311,6 @@ public abstract class DataBase {
 	}
 
 	public static class JsonInterface implements JsonSerializer<DataBase>, JsonDeserializer<DataBase> {
-
-		@SuppressWarnings({})
 		@Override
 		public DataBase deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 				throws JsonParseException {
@@ -377,6 +381,54 @@ public abstract class DataBase {
 	static {
 		gson = new GsonBuilder().setPrettyPrinting().registerTypeHierarchyAdapter(DataBase.class, new JsonInterface())
 				.create();
+	}
+
+	public static String getSample(Class<? extends DataBase> clazz) {
+		try {
+			DataBase data = clazz.newInstance();
+			for (DataEntry<?> entry : data.getEntries().values()) {
+				data.put(entry);
+			}
+			StringBuilder sb = new StringBuilder(data.toJson());
+			getUsage(sb, clazz);
+			return sb.toString();
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	private static String getUsage(StringBuilder sb,Class<? extends DataBase> clazz) {
+		sb.append("\n");
+		for (Entry<String, DataEntry<?>> entry : getEntries(clazz).entrySet()) {
+			DataEntry<?> e = entry.getValue();
+			if (e.Default.getClass().isEnum()) {
+				sb.append("//");
+				sb.append(entry.getKey());
+				sb.append(" : ");
+				sb.append(Strings.join(EnumUtils.getEnumList((Class) e.Default.getClass()), ','));
+				sb.append("\n");
+			}
+			if (e.Info != null && (e.Info.Max != Float.MAX_VALUE || e.Info.Min != -Float.MAX_VALUE)) {
+				sb.append("//");
+				sb.append(entry.getKey());
+				sb.append(" : ");
+				boolean flag = false;
+				if(e.Info.Max != Float.MAX_VALUE) {
+					sb.append("Max=");
+					sb.append(e.Info.Max);
+					flag=true;
+				}
+				if(e.Info.Min != -Float.MAX_VALUE) {
+					if(flag)
+						sb.append(",");
+					sb.append("Min=");
+					sb.append(e.Info.Min);
+				}
+				sb.append("\n");
+			}
+		}
+		return sb.toString();
 	}
 
 	/** カスタムシリアライザ使用のGson */
