@@ -1,5 +1,6 @@
 package hide.types.base;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -9,9 +10,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.util.Strings;
 
+import com.google.common.collect.Iterators;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -383,12 +384,10 @@ public abstract class DataBase {
 				.create();
 	}
 
-	public static String getSample(Class<? extends DataBase> clazz) {
+	public static String getSample(Class<? extends DataBase> clazz, boolean simple) {
 		try {
 			DataBase data = clazz.newInstance();
-			for (DataEntry<?> entry : data.getEntries().values()) {
-				data.put(entry);
-			}
+			putDefault(data, simple);
 			StringBuilder sb = new StringBuilder(data.toJson());
 			getUsage(sb, clazz);
 			return sb.toString();
@@ -398,37 +397,100 @@ public abstract class DataBase {
 		return "";
 	}
 
-	private static String getUsage(StringBuilder sb,Class<? extends DataBase> clazz) {
+	public static void putDefault(DataBase data, boolean simple) {
+		try {
+			for (DataEntry<?> entry : data.getEntries().values()) {
+				// 配列なら
+				if (entry.Default.getClass().isArray()) {
+					putDefaultArray(data, entry);
+				} else {
+					data.put(entry);
+					if (!simple && entry.Default instanceof DataBase)
+						putDefault((DataBase) data.dataMap.get(entry).value, simple);
+				}
+			}
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static <T> void putDefaultArray(DataBase data, DataEntry<T> entry)
+			throws InstantiationException, IllegalAccessException {
+		if (0 < Array.getLength(entry.Default)) {
+			data.put(entry);
+			return;
+		}
+		Object[] array = (Object[]) Array.newInstance(entry.Default.getClass().getComponentType(), 1);
+		if (DataBase.class.isAssignableFrom(entry.Default.getClass().getComponentType())) {
+			array[0] = entry.Default.getClass().getComponentType().newInstance();
+		} else if (String.class.isAssignableFrom(entry.Default.getClass().getComponentType())) {
+			array[0] = "";
+		}
+		data.put(entry, Operator.SET, (T) array);
+	}
+
+	private static String getUsage(StringBuilder sb, Class<? extends DataBase> clazz) {
 		sb.append("\n");
 		for (Entry<String, DataEntry<?>> entry : getEntries(clazz).entrySet()) {
 			DataEntry<?> e = entry.getValue();
+			boolean first = true;
 			if (e.Default.getClass().isEnum()) {
 				sb.append("//");
 				sb.append(entry.getKey());
-				sb.append(" : ");
-				sb.append(Strings.join(EnumUtils.getEnumList((Class) e.Default.getClass()), ','));
-				sb.append("\n");
+				first = false;
+
+				// Enum
+				sb.append(" : Enum = ");
+				sb.append(getTypeUsage(e.Default.getClass()));
+			} else {
+				if (e.Default.getClass().isArray()) {
+					sb.append("//");
+					sb.append(entry.getKey());
+					first = false;
+					sb.append(" : Type = ");
+					sb.append(getTypeUsage(e.Default.getClass().getComponentType()));
+				}
 			}
 			if (e.Info != null && (e.Info.Max != Float.MAX_VALUE || e.Info.Min != -Float.MAX_VALUE)) {
-				sb.append("//");
-				sb.append(entry.getKey());
-				sb.append(" : ");
+
+				// Min Max
 				boolean flag = false;
-				if(e.Info.Max != Float.MAX_VALUE) {
+				if (e.Info.Max != Float.MAX_VALUE) {
+					if (first) {
+						sb.append("//");
+						sb.append(entry.getKey());
+						sb.append(" : ");
+						first = false;
+					}
 					sb.append("Max=");
 					sb.append(e.Info.Max);
-					flag=true;
+					flag = true;
 				}
-				if(e.Info.Min != -Float.MAX_VALUE) {
-					if(flag)
+				if (e.Info.Min != -Float.MAX_VALUE) {
+					if (flag)
 						sb.append(",");
+					else if (first) {
+						sb.append("//");
+						sb.append(entry.getKey());
+						sb.append(" : ");
+						first = false;
+					}
 					sb.append("Min=");
 					sb.append(e.Info.Min);
 				}
-				sb.append("\n");
 			}
+			if (!first)
+				sb.append("\n");
 		}
 		return sb.toString();
+	}
+
+	private static String getTypeUsage(Class<?> clazz) {
+		if (clazz.isEnum()) {
+			return "[" + Strings.join(Iterators.forArray(clazz.getEnumConstants()), ',') + "]";
+
+		}
+		return clazz.getSimpleName();
 	}
 
 	/** カスタムシリアライザ使用のGson */
