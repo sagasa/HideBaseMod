@@ -24,7 +24,6 @@ build
 eclipse
 
 /*.txt
-*.bat
 
 /run/*
 !/run/Hide
