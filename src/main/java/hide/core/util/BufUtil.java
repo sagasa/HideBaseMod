@@ -9,14 +9,21 @@ public class BufUtil {
 
 	/** バッファに文字列を書き込む */
 	public static void writeString(ByteBuf buf, String str) {
-		byte[] data = str.getBytes(UTF8);
-		buf.writeInt(data.length);
-		buf.writeBytes(data);
+		if (str == null) {
+			buf.writeInt(0);
+		} else {
+			byte[] data = str.getBytes(UTF8);
+			buf.writeInt(data.length);
+			buf.writeBytes(data);
+		}
+
 	}
 
 	/** バッファから文字列を読み込む */
 	public static String readString(ByteBuf buf) {
 		int length = buf.readInt();
+		if (length == 0)
+			return null;
 		return buf.readBytes(length).toString(UTF8);
 	}
 

@@ -1,4 +1,4 @@
-package hide.core.sync;
+package hide.core.sync.http;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,10 +23,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import hide.core.HideBase;
+import hide.core.sync.HideSync;
 import hide.core.sync.HideSync.SyncDirEntry;
 import hide.core.sync.http.AbstractHttpMessage.Method;
-import hide.core.sync.http.HideFileReq;
-import hide.core.sync.http.HideFileRes;
 
 /**サーバー側のファイルを送信する 512MBまで*/
 public class HttpFileServer implements Runnable {

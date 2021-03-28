@@ -320,7 +320,7 @@ public abstract class DataBase {
 			JsonObject obj = json.getAsJsonObject();
 			Map<String, DataEntry<?>> map = nameEntryMap.get(obj.get("Type").getAsString());
 			if (map == null)
-				throw new JsonParseException("bad typename");
+				throw new JsonParseException("bad typename "+obj.get("Type"));
 			Class<? extends DataBase> container = nameTypeMap.get(obj.get("Type").getAsString());
 
 			DataBase database = null;

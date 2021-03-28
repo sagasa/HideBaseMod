@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import hide.core.ops.CommandOPLevel;
 import hide.core.sync.HideSync;
 import hide.core.sync.HideSync.SyncDirEntry;
-import hide.core.sync.HttpFileServer;
+import hide.core.sync.http.HttpFileServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
