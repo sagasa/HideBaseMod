@@ -262,6 +262,20 @@ public class HideBaseTransformer implements IClassTransformer {
 								mv.visitLabel(skip);
 							}
 						}, true));
+		/* チャットの制限解除 */
+		transformEntries.add(
+				new TransformEntry("net.minecraft.util.ChatAllowedCharacters",
+						new String[] { "isAllowedCharacter", "func_71565_a" },
+						(mv) -> new MethodVisitor(ASM4, mv) {
+							@Override
+							public void visitIntInsn(int opcode, int operand) {
+								System.out.println("AAAAA " + opcode + " " + operand);
+								if (opcode == SIPUSH || operand == 167)
+									super.visitIntInsn(opcode, 127);
+								else
+									super.visitIntInsn(opcode, operand);
+							}
+						}));
 	}
 
 	@Override
@@ -269,6 +283,7 @@ public class HideBaseTransformer implements IClassTransformer {
 		for (TransformEntry transform : transformEntries) {
 			bytes = transform.apply(name, transformedName, bytes);
 		}
+
 		return bytes;
 	}
 

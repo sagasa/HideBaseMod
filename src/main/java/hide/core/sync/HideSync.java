@@ -141,7 +141,7 @@ public class HideSync {
 	private static Map<File, Pair<String, Long>> fileHash = new ConcurrentHashMap<>();
 
 	/** 重いので注意 マルチスレッド対応 */
-	static String getOrMakeHash(File file) {
+	public static String getOrMakeHash(File file) {
 		if (!file.canRead())
 			return "";
 		// ハッシュ 更新時間
