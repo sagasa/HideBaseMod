@@ -269,11 +269,24 @@ public class HideBaseTransformer implements IClassTransformer {
 						(mv) -> new MethodVisitor(ASM4, mv) {
 							@Override
 							public void visitIntInsn(int opcode, int operand) {
-								System.out.println("AAAAA " + opcode + " " + operand);
+
 								if (opcode == SIPUSH || operand == 167)
 									super.visitIntInsn(opcode, 127);
 								else
 									super.visitIntInsn(opcode, operand);
+							}
+						}));
+		/* チャットの幅変更 */
+		transformEntries.add(
+				new TransformEntry("net.minecraft.client.gui.GuiNewChat",
+						new String[] { "calculateChatboxWidth", "func_146233_a" },
+						(mv) -> new MethodVisitor(ASM4, mv) {
+							@Override
+							public void visitLdcInsn(Object cst) {
+								if (cst.equals(280.0f))
+									super.visitLdcInsn(320.0f);
+								else
+									super.visitLdcInsn(cst);
 							}
 						}));
 	}
@@ -283,7 +296,6 @@ public class HideBaseTransformer implements IClassTransformer {
 		for (TransformEntry transform : transformEntries) {
 			bytes = transform.apply(name, transformedName, bytes);
 		}
-
 		return bytes;
 	}
 

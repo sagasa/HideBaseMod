@@ -9,6 +9,8 @@ import hide.core.ops.CommandOPLevel;
 import hide.core.sync.HideSync;
 import hide.core.sync.HideSync.SyncDirEntry;
 import hide.core.sync.http.HttpFileServer;
+import hide.easyedit.base.EasyEditList;
+import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -57,6 +59,12 @@ public class HideBase {
 		 * IMesssageHandlerクラスとMessageクラスの登録。 第三引数：MessageクラスのMOD内での登録ID。256個登録できる
 		 * 第四引数：送り先指定。クライアントかサーバーか、Side.CLIENT Side.SERVER
 		 */
+
+		EasyEditList test = new  EasyEditList();
+		System.out.println(test.get(EasyEditList.vec3));
+		test.set(EasyEditList.vec3, new Vec3i(1, 2, 3));
+		System.out.println(test.get(EasyEditList.vec3));
+		System.out.println(test.toJson());
 
 		HideSync.registerSyncDir(HideDirEntry);
 	}

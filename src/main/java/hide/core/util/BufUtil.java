@@ -10,7 +10,7 @@ public class BufUtil {
 	/** バッファに文字列を書き込む */
 	public static void writeString(ByteBuf buf, String str) {
 		if (str == null) {
-			buf.writeInt(0);
+			buf.writeInt(-1);
 		} else {
 			byte[] data = str.getBytes(UTF8);
 			buf.writeInt(data.length);
@@ -22,7 +22,7 @@ public class BufUtil {
 	/** バッファから文字列を読み込む */
 	public static String readString(ByteBuf buf) {
 		int length = buf.readInt();
-		if (length == 0)
+		if (length == -1)
 			return null;
 		return buf.readBytes(length).toString(UTF8);
 	}
