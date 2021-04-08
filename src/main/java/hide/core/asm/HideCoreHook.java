@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import hide.core.HideBase;
+import hide.core.HideEvents;
 import hide.core.ops.HideUserListOps;
 import hide.core.sync.FileData;
 import hide.core.sync.HideDownloader;
@@ -18,6 +19,7 @@ import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.server.management.UserListOps;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
@@ -142,5 +144,15 @@ public class HideCoreHook {
 		if (OnLeftClick != null)
 			return OnLeftClick.apply(mc);
 		return false;
+	}
+
+	public static void onChangePlayerTeam(String player) {
+		MinecraftForge.EVENT_BUS.post(new HideEvents.TeamUpdate(player));
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static void onChangePlayerTeamClient(String player) {
+		if (Minecraft.getMinecraft().player.getName().equals(player))
+			MinecraftForge.EVENT_BUS.post(new HideEvents.TeamUpdateClient());
 	}
 }
