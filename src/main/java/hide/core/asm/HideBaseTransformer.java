@@ -21,8 +21,6 @@ import com.google.common.collect.Multimaps;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
-import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class HideBaseTransformer implements IClassTransformer {
 	// IClassTransformerにより呼ばれる書き換え用のメソッド。
@@ -34,12 +32,7 @@ public class HideBaseTransformer implements IClassTransformer {
 
 	private static void register(String className, String methodName[],
 			Function<MethodVisitor, MethodVisitor> methodVisitor) {
-		register(className, methodName, methodVisitor, false);
-	}
-
-	private static void register(String className, String methodName[],
-			Function<MethodVisitor, MethodVisitor> methodVisitor, boolean isClient) {
-		transformMap.put(className, new TransformEntry(methodName, methodVisitor, isClient));
+		transformMap.put(className, new TransformEntry(methodName, methodVisitor));
 	}
 
 	static {
@@ -114,7 +107,7 @@ public class HideBaseTransformer implements IClassTransformer {
 						}
 						super.visitInsn(opcode);
 					}
-				}, true);
+				});
 		/* ハンドシェイクコーデックのコンストラクタにフック */
 		register(
 				"net.minecraftforge.fml.common.network.handshake.FMLHandshakeCodec", new String[] { "<init>" },
@@ -222,7 +215,7 @@ public class HideBaseTransformer implements IClassTransformer {
 												Type.INT_TYPE),
 								false);
 					}
-				}, true);
+				});
 		/* 腕の向きを上書き */
 		register("net.minecraft.client.model.ModelBiped",
 				new String[] { "setRotationAngles", "func_78087_a" },
@@ -240,7 +233,7 @@ public class HideBaseTransformer implements IClassTransformer {
 						}
 						super.visitInsn(opcode);
 					}
-				}, true);
+				});
 		/* レンダーのコンストラクタにフック */
 		register("net.minecraft.client.renderer.entity.RenderLivingBase", new String[] { "<init>" },
 				(mv) -> new MethodVisitor(ASM4, mv) {
@@ -257,7 +250,7 @@ public class HideBaseTransformer implements IClassTransformer {
 						}
 						super.visitInsn(opcode);
 					}
-				}, true);
+				});
 		/* 左クリックのアニメーションフック */
 		register("net.minecraft.client.Minecraft", new String[] { "clickMouse", "func_147116_af" },
 				(mv) -> new MethodVisitor(ASM4, mv) {
@@ -274,7 +267,7 @@ public class HideBaseTransformer implements IClassTransformer {
 						mv.visitInsn(RETURN);
 						mv.visitLabel(skip);
 					}
-				}, true);
+				});
 		/* チャットの制限解除 */
 		register("net.minecraft.util.ChatAllowedCharacters",
 				new String[] { "isAllowedCharacter", "func_71565_a" },
@@ -396,7 +389,7 @@ public class HideBaseTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(final String name, final String transformedName, byte[] bytes) {
-		if (transformMap.containsKey(name)) {
+		if (transformMap.containsKey(transformedName)) {
 			ClassReader cr = new ClassReader(bytes);
 			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 			ClassVisitor cv = new ClassVisitor(ASM4, cw) {
@@ -407,10 +400,10 @@ public class HideBaseTransformer implements IClassTransformer {
 					MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions);
 					// メゾット名
 					String s1 = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(name, methodName, desc);
-					for (TransformEntry entry : transformMap.get(name)) {
-						//サイドフィルタ
-						if (!entry.isClient || FMLLaunchHandler.side() == Side.CLIENT)
-							mv = entry.apply(s1, mv);
+					for (TransformEntry entry : transformMap.get(transformedName)) {
+//						System.out
+//								.println("transform " + transformedName + " " + s1 + " " + ArrayUtils.toString(entry.MethodName));
+						mv = entry.apply(s1, mv);
 					}
 					return mv;
 				}
@@ -422,22 +415,20 @@ public class HideBaseTransformer implements IClassTransformer {
 	}
 
 	static class TransformEntry {
-		TransformEntry(String methodName[], Function<MethodVisitor, MethodVisitor> methodVisitor,
-				boolean isclient) {
+		TransformEntry(String methodName[], Function<MethodVisitor, MethodVisitor> methodVisitor) {
 			MethodName = methodName;
 			MethodVisitor = methodVisitor;
-			isClient = isclient;
 		}
 
 		String MethodName[];
 
-		boolean isClient = false;
 		Function<MethodVisitor, MethodVisitor> MethodVisitor;
 
 		/** 指定のメゾットを書き換え */
 		MethodVisitor apply(final String methodName, MethodVisitor mv) {
 			for (String str : MethodName) {
 				if (str.equals(methodName)) {
+//					System.out.println("hit " + methodName);
 					mv = MethodVisitor.apply(mv);
 					break;
 				}
