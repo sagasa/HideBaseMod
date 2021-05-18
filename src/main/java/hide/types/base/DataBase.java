@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -64,7 +65,6 @@ public abstract class DataBase {
 
 	/** 編集禁止 */
 	public Map<String, DataEntry<?>> getEntries() {
-		initEntry();
 		return nameEntryMap.get(getTypeName(getClass()));
 	}
 
@@ -141,15 +141,6 @@ public abstract class DataBase {
 		return index;
 	}
 
-	private boolean isInit = false;
-
-	private void initEntry() {
-		if (dataMap == null && !isInit) {
-			initEntry(getClass());
-			init();
-		}
-	}
-
 	// ====== HideDataホルダー ======
 	private static Map<String, Map<String, DataEntry<?>>> nameEntryMap = new HashMap<>();
 	private static Map<String, Class<? extends DataBase>> nameTypeMap = new HashMap<>();
@@ -161,30 +152,16 @@ public abstract class DataBase {
 
 	protected DataBase parent;
 
-	/** nullなら未初期化 */
+	/** 元データ */
 	protected DataMap<ValueEntry<?>> dataMap;
 
 	public DataBase() {
 		initEntry(getClass());
-		// 初期化が終わっていなければ実行しない
-		if (nameTypeMap.containsKey(getTypeName(getClass())))
-			init();
-		else {
-			Map<String, DataEntry<?>> map = new LinkedHashMap<>();
-			registerEntry(getClass(), 0, map);
-			System.out.println("err " + getTypeName(getClass()) + " " + map);
-		}
-	}
-
-	/** 初回のインスタンス作成時のみ実行 */
-	private void init() {
-		isInit = true;
 		dataMap = new DataMap<>(getClass());
 	}
 
 	/** 内包するDataBaseオブジェクトに親子関係を反映する */
 	protected void initParent() {
-		initEntry();
 		for (DataEntry<?> key : getEntries().values()) {
 			if (dataMap.containsKey(key) && key.Default instanceof DataBase) {
 				DataBase _child = (DataBase) dataMap.get(key).getValue();
@@ -253,7 +230,8 @@ public abstract class DataBase {
 		if (parent != null)
 			base = parent.get(key, base);
 		else
-			// 最上位なら
+		// 最上位なら
+		if (base == null)
 			base = key.Default;
 		if (entry != null)
 			return entry.apply(base);
@@ -264,8 +242,12 @@ public abstract class DataBase {
 	 * チェンジリスナ付きのエントリを取得
 	 */
 	public <T> ValueEntry<T> getEntry(DataEntry<T> key) {
-		initEntry();
 		return (ValueEntry<T>) dataMap.get(key);
+	}
+
+	/**登録されてるエントリのセット*/
+	public Set<DataEntry<?>> getKeySet() {
+		return dataMap.keySet();
 	}
 
 	/**
@@ -274,7 +256,6 @@ public abstract class DataBase {
 	 * @return
 	 */
 	public <T> ValueEntry<T> put(DataEntry<T> key) {
-		initEntry();
 		T value = key.Default;
 		if (key.Default instanceof DataBase) {
 			try {
@@ -289,7 +270,6 @@ public abstract class DataBase {
 	}
 
 	public <T> ValueEntry<T> put(DataEntry<T> key, Operator operator, T value) {
-		initEntry();
 		if (!ArrayUtils.contains(Operator.getAllow(value.getClass()), operator))
 			throw new IllegalArgumentException("Operator " + operator + " not supported for " + value.getClass());
 		if (dataMap.containsKey(key)) {
@@ -301,7 +281,6 @@ public abstract class DataBase {
 	}
 
 	public void remove(DataEntry<?> key) {
-		initEntry();
 		if (dataMap.containsKey(key)) {
 			dataMap.remove(key);
 		}
@@ -320,7 +299,7 @@ public abstract class DataBase {
 			JsonObject obj = json.getAsJsonObject();
 			Map<String, DataEntry<?>> map = nameEntryMap.get(obj.get("Type").getAsString());
 			if (map == null)
-				throw new JsonParseException("bad typename "+obj.get("Type"));
+				throw new JsonParseException("bad typename " + obj.get("Type"));
 			Class<? extends DataBase> container = nameTypeMap.get(obj.get("Type").getAsString());
 
 			DataBase database = null;

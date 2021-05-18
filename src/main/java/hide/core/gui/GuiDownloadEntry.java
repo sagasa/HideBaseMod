@@ -11,13 +11,13 @@ public class GuiDownloadEntry extends Gui implements IProgressUpdate {
 
 	private String msg;
 	private String name;
+	private int color;
 	private float progress;
 	private boolean isWorking = true;
 
 	@Override
 	public void displaySavingString(String message) {
 		msg = message;
-
 	}
 
 	@Override

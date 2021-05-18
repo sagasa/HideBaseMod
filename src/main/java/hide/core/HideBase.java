@@ -6,6 +6,8 @@ import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
 import hide.core.ops.CommandOPLevel;
+import hide.core.sync.DataSync;
+import hide.core.sync.DataSync.SyncMsg;
 import hide.core.sync.HideSync;
 import hide.core.sync.HideSync.SyncDirEntry;
 import hide.core.sync.http.HttpFileServer;
@@ -20,6 +22,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -58,14 +61,16 @@ public class HideBase {
 		 * 第四引数：送り先指定。クライアントかサーバーか、Side.CLIENT Side.SERVER
 		 */
 
+		NETWORK.registerMessage(DataSync.class, SyncMsg.class, 0, Side.CLIENT);
 
-//		EasyEditList test = new  EasyEditList();
-//		System.out.println(test.get(EasyEditList.vec3));
-//		test.set(EasyEditList.vec3, new Vec3i(1, 2, 3));
-//		System.out.println(test.get(EasyEditList.vec3));
-//		System.out.println(test.toJson());
+		//		EasyEditList test = new  EasyEditList();
+		//		System.out.println(test.get(EasyEditList.vec3));
+		//		test.set(EasyEditList.vec3, new Vec3i(1, 2, 3));
+		//		System.out.println(test.get(EasyEditList.vec3));
+		//		System.out.println(test.toJson());
 
 		HideSync.registerSyncDir(HideDirEntry);
+
 	}
 
 	@EventHandler
@@ -102,5 +107,11 @@ public class HideBase {
 	@SubscribeEvent
 	public void onEvent(ClientConnectedToServerEvent event) {
 		HidePlayerDataManager.clearClientData();
+	}
+
+	/**リスポーンのインスタンス変更*/
+	@SubscribeEvent
+	public void onEvent(PlayerRespawnEvent event) {
+		HidePlayerDataManager.respawn(event.player);
 	}
 }
