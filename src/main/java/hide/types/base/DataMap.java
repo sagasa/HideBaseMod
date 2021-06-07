@@ -58,8 +58,7 @@ public class DataMap<V> extends AbstractMap<DataEntry<?>, V> {
 			size--;
 			keys[key.getIndex()] = null;
 			values[key.getIndex()] = null;
-			System.out.println(size + " ");
-			;
+			//System.out.println(size + " ");
 			maxIndex = size <= 0 ? 0
 					: Arrays.stream(keys).filter(k -> k != null).max((v0, v1) -> v0.getIndex() - v1.getIndex()).get()
 							.getIndex();

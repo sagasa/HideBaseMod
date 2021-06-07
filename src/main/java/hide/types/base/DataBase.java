@@ -30,7 +30,7 @@ import hide.types.value.Operator;
 /**
  * 多目的なホルダークラス
  */
-public abstract class DataBase {
+public abstract class DataBase implements IDataHolder {
 
 	public static class DataEntry<T> {
 		public final T Default;
@@ -217,13 +217,10 @@ public abstract class DataBase {
 		}
 	}
 
-	public <T> T get(DataEntry<T> key) {
-		return get(key, null);
-	}
-
 	/**
 	 * 元値とキーから結果を返す
 	 */
+	@Override
 	public <T> T get(DataEntry<T> key, T base) {
 		ValueEntry<T> entry = getEntry(key);
 		// Baseが無ければ初期値を

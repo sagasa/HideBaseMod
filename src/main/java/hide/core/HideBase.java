@@ -70,7 +70,6 @@ public class HideBase {
 		//		System.out.println(test.toJson());
 
 		HideSync.registerSyncDir(HideDirEntry);
-
 	}
 
 	@EventHandler

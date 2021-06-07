@@ -22,6 +22,8 @@ public abstract class NamedData extends DataBase {
 		collection.forEach(data -> data.setParent(map.get(data.get(NamedData.ParentName, null))));
 	}
 
+	public abstract DataEntry<String> displayName();
+
 	/** 全部小文字[a-z][0-9] */
 	public abstract DataEntry<String> systemName();
 

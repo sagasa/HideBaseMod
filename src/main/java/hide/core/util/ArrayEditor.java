@@ -8,6 +8,32 @@ import org.apache.commons.lang3.ArrayUtils;
 /** プリミティブ配列の結合など */
 public class ArrayEditor {
 
+	public static <T> IExIterator<T> toIterator(T[] array) {
+		return new IExIterator<T>() {
+			int index = 0;
+
+			@Override
+			public boolean hasNext() {
+				return index + 0 < array.length;
+			}
+
+			@Override
+			public T next() {
+				return array[index++];
+			}
+
+			@Override
+			public T pollNext() {
+				return array[index];
+			}
+
+			@Override
+			public String toString() {
+				return ArrayUtils.toString(array)+" index = "+index;
+			}
+		};
+	}
+
 	// ===========検索============
 	private static final String space = " ";// TODO
 

@@ -12,10 +12,7 @@ public enum Operator {
 		} else if (Float.class.isAssignableFrom(target.getClass())) {
 			return ((Float) target) + ((Float) value);
 		} else if (Curve.class.isAssignableFrom(target.getClass())) {
-			Curve newValue = new Curve();
-			newValue.Keys = ((Curve) value).Keys.clone();
-			newValue.setAdd((Curve) target);
-			return newValue;
+			return ((Curve) value).setAdd((Curve) target);
 		}
 		throw new IllegalArgumentException(
 				"Operator not supported for this type " + target.getClass() + " " + value.getClass());
@@ -25,15 +22,12 @@ public enum Operator {
 		} else if (Float.class.isAssignableFrom(target.getClass())) {
 			return ((Float) target) * ((Float) value);
 		} else if (Curve.class.isAssignableFrom(target.getClass())) {
-			Curve newValue = new Curve();
-			newValue.Keys = ((Curve) value).Keys.clone();
-			newValue.setMultiple((Curve) target);
-			return newValue;
+			return ((Curve) value).setMultiple((Curve) target);
 		}
 		throw new IllegalArgumentException(
 				"Operator not supported for this type " + target.getClass() + " " + value.getClass());
-	}), ARRAY_ADD((target, value) -> ArrayEditor.makeSumArray((Object[]) target, (Object[]) value)),
-	ARRAY_REMOVE((target, value) -> ArrayEditor.makeSubArray((Object[]) target, (Object[]) value));
+	}), ARRAY_ADD((target, value) -> ArrayEditor.makeSumArray((Object[]) target, (Object[]) value)), ARRAY_REMOVE(
+			(target, value) -> ArrayEditor.makeSubArray((Object[]) target, (Object[]) value));
 
 	private static Operator[] NUMBER = new Operator[] { SET, ADD, MULTIPLE };
 	private static Operator[] ARRAY = new Operator[] { SET, ARRAY_ADD, ARRAY_REMOVE };
