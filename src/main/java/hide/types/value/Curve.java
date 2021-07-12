@@ -33,6 +33,9 @@ public class Curve implements Cloneable {
 		float minKey = -Float.MAX_VALUE;
 		List<CurveKey> keys = new ArrayList<>();
 		while (true) {
+			if (!itr_a.hasNext() && !itr_b.hasNext()) {
+				break;
+			}
 			CurveKey min;
 			if (!itr_b.hasNext() || itr_a.hasNext() && itr_a.pollNext().Key < itr_b.pollNext().Key)
 				min = itr_a.next();
@@ -45,9 +48,6 @@ public class Curve implements Cloneable {
 			}
 			minKey = min.Key;
 			keys.add(new CurveKey(minKey, operator.apply(get(minKey), base.get(minKey))));
-			if (!itr_a.hasNext() && !itr_b.hasNext()) {
-				break;
-			}
 		}
 		Curve curve = new Curve();
 		curve.Keys = keys.toArray(new CurveKey[keys.size()]);
