@@ -7,5 +7,7 @@ public interface IDataHolder {
 		return get(key, key.Default);
 	}
 
+	boolean hasValue(DataEntry key);
+
 	<T> T get(DataEntry<T> key, T base);
 }

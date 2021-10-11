@@ -235,6 +235,11 @@ public abstract class DataBase implements IDataHolder {
 		return base;
 	}
 
+	@Override
+	public boolean hasValue(DataEntry key) {
+		return dataMap.containsKey(key);
+	}
+
 	/**
 	 * チェンジリスナ付きのエントリを取得
 	 */
@@ -298,6 +303,11 @@ public abstract class DataBase implements IDataHolder {
 			if (map == null)
 				throw new JsonParseException("bad typename " + obj.get("Type"));
 			Class<? extends DataBase> container = nameTypeMap.get(obj.get("Type").getAsString());
+
+			if (container == null) {
+				throw new JsonParseException(
+						String.format("%s not found in typeNameMap %s", obj.get("Type"), nameTypeMap.keySet()));
+			}
 
 			DataBase database = null;
 
